@@ -13,7 +13,12 @@ const taskSchema = new mongoose.Schema({
         ref:"User",
         required:true
     }}
-    ,{timestamps:true}
+    ,{timestamps:true},
+    
 )
+taskSchema.index({
+        title: "text",
+        description: "text"
+    });
 
 module.exports = mongoose.model("Task",taskSchema);

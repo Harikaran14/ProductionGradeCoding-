@@ -30,12 +30,45 @@ const getTask = async (req,res)=>{
         const limit = parseInt(req.query.limit) || 10;
         const skip= (page-1)*limit;
         const total = await Task.countDocuments({user:req.user._id});
-
-        const task= await Task.find({user: req.user._id}).skip(skip).limit(limit);
-        res.status(200).json({
+        const filter={user:req.user._id};
+        if (req.query.status){
+            filter.status=req.query.status;
+        }
+        if (req.query.sch){
+            /*filter.$or=[{
+                title:{
+                    $regex:req.query.sch, $options: "i"
+                }
+            },
+            {
+                description:{
+                    $regex:req.query.sch, $options: "i"
+                }
+            }
+                
+            ];*/
+            filter.$text={
+                
+                    $search:req.query.sch
+                
+            }
+        }
+        const sortby = req.query.sort || "-createdAt";
+        if (req.query.sch){
+            const task= await Task.find(filter,{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).skip(skip).limit(limit);
+            res.status(200).json({
             page,limit,total, count:task.length,
             task
         });
+        }
+        else{
+            const task= await Task.find(filter).sort(sortby).skip(skip).limit(limit);
+            res.status(200).json({
+            page,limit,total, count:task.length,
+            task
+        });
+        }
+        
 
     }
     catch(error){
