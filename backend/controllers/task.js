@@ -25,9 +25,15 @@ catch(error){
 
 const getTask = async (req,res)=>{
     try{
-        console.log(req);
-        const task= await Task.find({user: req.user._id});
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip= (page-1)*limit;
+        const total = await Task.countDocuments({user:req.user._id});
+
+        const task= await Task.find({user: req.user._id}).skip(skip).limit(limit);
         res.status(200).json({
+            page,limit,total, count:task.length,
             task
         });
 
